@@ -1,0 +1,40 @@
+type keyseed [fixed, large]. 
+type pkey [bounded].
+type skey [bounded].
+type cleartext [bounded].
+type ciphertext [bounded].
+type enc_seed [bounded].
+
+type nonce [fixed, large].
+
+proba Pkeycoll. 
+expand public_key_enc_all_args(keyseed, pkey, skey, nonce, ciphertext, enc_seed, skgen, pkgen, enc, enc_r, dec, injbot, Pkeycoll).
+
+fun msg(nonce): nonce [data]. 
+
+event send(nonce).
+event receive(nonce).
+
+let processInit(pk: pkey) = 
+    OInit() :=
+       n <-R nonce;
+       event send(n);
+       let c = enc(msg(n), pk) in 
+       return (c).
+
+let processRecv(sk: skey) = 
+     ORecv(str: ciphertext) :=
+         let injbot(msg(n')) = dec(str, sk) in 
+         event receive(n');
+         return ().
+
+query n:nonce; event(send(n)) ==> event(receive(n)).
+query n:nonce; secret n.
+
+process 
+   Ostart() :=
+       r <-R keyseed;
+       let pk = pkgen(r) in 
+       let sk = skgen(r) in 
+       return (pk);
+       (run processInit(pk) | run processRecv(sk))
