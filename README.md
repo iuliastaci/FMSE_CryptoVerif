@@ -1,2 +1,1 @@
-# FMSE_CryptoVerif
-Protocol modelling in CryptoVerif
+# Modelarea protocoalelor in CryptoVerif
